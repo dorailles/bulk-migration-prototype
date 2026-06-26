@@ -129,7 +129,7 @@ export function ComparisonTable({ quizzes, showDate = false }: { quizzes: Compar
           interaction={selected.size > 0 ? 'enabled' : 'disabled'}
           onClick={() => setPending([...selected])}
         >
-          Delete originals
+          Replace originals
         </Button>
       </Flex>
 
@@ -193,7 +193,7 @@ export function ComparisonTable({ quizzes, showDate = false }: { quizzes: Compar
                 <Table.Cell textAlign="end">
                   {canAct ? (
                     <Button size="small" color="danger" onClick={() => setPending([q.id])}>
-                      <span style={{ whiteSpace: 'nowrap' }}>Delete original</span>
+                      <span style={{ whiteSpace: 'nowrap' }}>Replace original</span>
                     </Button>
                   ) : null}
                 </Table.Cell>
@@ -208,20 +208,20 @@ export function ComparisonTable({ quizzes, showDate = false }: { quizzes: Compar
         <Modal.Header>
           <Flex justifyItems="space-between" alignItems="center">
             <Heading level="h2" variant="titleCardLarge" margin="0">
-              Delete {pendingCount === 1 ? 'original quiz' : `${pendingCount} original quizzes`}?
+              Replace {pendingCount === 1 ? 'original quiz' : `${pendingCount} original quizzes`}?
             </Heading>
             <CloseButton onClick={() => setPending(null)} screenReaderLabel="Close" />
           </Flex>
         </Modal.Header>
         <Modal.Body>
           <Text>
-            {pendingCount === 1 ? 'This Classic quiz' : `These ${pendingCount} Classic quizzes`} will be permanently
-            deleted. The New Quizzes {pendingCount === 1 ? 'version stays' : 'versions stay'} in place. This can't be undone.
+            {pendingCount === 1 ? 'This Classic quiz' : `These ${pendingCount} Classic quizzes`} will be replaced by
+            the New Quizzes {pendingCount === 1 ? 'version' : 'versions'}. This can't be undone.
           </Text>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={() => setPending(null)} margin="0 x-small 0 0">Cancel</Button>
-          <Button color="danger" onClick={confirmDelete}>Delete</Button>
+          <Button color="danger" onClick={confirmDelete}>Replace</Button>
         </Modal.Footer>
       </Modal>
 

@@ -517,8 +517,7 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
             <Flex direction="column" gap="small">
               <Heading level="h3" variant="titleCardRegular" margin="0">Compare and confirm</Heading>
               <Text color="secondary">
-                Open each version to compare the Classic and New Quizzes side by side in a new tab. Mark each as
-                reviewed, then delete the original Classic quiz once you're confident.
+                You can use this list to compare the newly created quizzes to their Classic version.
               </Text>
               <ComparisonTable quizzes={lastResult.quizzes} />
             </Flex>

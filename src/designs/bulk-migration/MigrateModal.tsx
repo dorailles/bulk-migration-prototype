@@ -8,7 +8,7 @@ import { Text } from '@instructure/ui-text/latest'
 import { Button, CloseButton } from '@instructure/ui-buttons/latest'
 import { Checkbox } from '@instructure/ui-checkbox/latest'
 import { ScreenReaderContent } from '@instructure/ui-a11y-content'
-import { courseQuizzes, teacherName, UNSUPPORTED_TYPES } from './migrationModel'
+import { courseQuizzes, teacherName } from './migrationModel'
 import type { Course, Quiz } from './migrationModel'
 
 // A quiz plus the course/educator it belongs to — needed in the bulk sheet where quizzes
@@ -25,11 +25,11 @@ const GROUP_META: Record<GroupKey, { title: string; note?: string }> = {
   supported: { title: 'Fully supported' },
   submissions: {
     title: 'With submissions',
-    note: "We can't migrate quizzes that have submissions. The original quizzes with submissions will be kept and clean New Quizzes copies will be created.",
+    note: "For these quizzes we'll keep a copy of the original quiz. Existing submission data will be available through this original quiz.",
   },
   review: {
     title: 'Review needed',
-    note: `These quizzes can't be migrated automatically as-is yet. We'll keep the original quizzes and create New Quizzes copies. Review and adjust the copies manually, or update the originals and migrate again. Unsupported question types: ${UNSUPPORTED_TYPES.join(', ')}.`,
+    note: 'These quizzes contain rich content. You can review the migrated quizzes to ensure all content has been converted successfully.',
   },
 }
 
