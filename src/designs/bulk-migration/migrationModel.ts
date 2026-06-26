@@ -20,11 +20,17 @@ export const ISSUE_LABELS: Record<IssueKey, string> = {
 // Question types New Quizzes doesn't support yet — surfaced in the "Review needed" group.
 export const UNSUPPORTED_TYPES = ['Formula', 'Hot Spot'] as const
 
+export type CourseType = 'blueprint' | 'template' | 'active' | 'other'
+export type SubjectKey = 'biology' | 'language' | 'art' | 'math' | 'history' | 'science'
+
 export type Course = {
   id: string
   name: string
   teacherId: string
   term: string
+  courseType: CourseType // groups the dashboard tabs
+  subject: SubjectKey // drives the quiz name pool
+
   classicQuizzes: number // Classic quizzes still to migrate
   migratedQuizzes: number // already converted to New Quizzes
   // Counts of Classic quizzes flagged for each reason. Kept non-overlapping in seed data,
@@ -47,29 +53,104 @@ export const TEACHERS: Teacher[] = [
   { id: 't-priya', name: 'Priya Patel', email: 'priya.patel@wsd.edu' },
   { id: 't-tom', name: "Tom O'Brien", email: 'tom.obrien@wsd.edu' },
   { id: 't-sarah', name: 'Sarah Johnson', email: 'sarah.johnson@wsd.edu' },
+  { id: 't-david', name: 'David Park', email: 'david.park@wsd.edu' },
+  { id: 't-nina', name: 'Nina Petrova', email: 'nina.petrova@wsd.edu' },
+  { id: 't-omar', name: 'Omar Haddad', email: 'omar.haddad@wsd.edu' },
+  { id: 't-lena', name: 'Lena Müller', email: 'lena.muller@wsd.edu' },
+  { id: 't-grace', name: 'Grace Kim', email: 'grace.kim@wsd.edu' },
+  { id: 't-raj', name: 'Raj Mehta', email: 'raj.mehta@wsd.edu' },
+  { id: 't-ana', name: 'Ana Torres', email: 'ana.torres@wsd.edu' },
+  { id: 't-ben', name: 'Ben Carter', email: 'ben.carter@wsd.edu' },
 ]
 
-export const COURSES: Course[] = [
-  // Alex Smith
-  { id: 'c-bio101', name: 'Bio 101: Cellular Structure', teacherId: 't-alex', term: 'Fall 2026', classicQuizzes: 8, migratedQuizzes: 6, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-bio201', name: 'Biology 201 — Genetics', teacherId: 't-alex', term: 'Fall 2026', classicQuizzes: 7, migratedQuizzes: 5, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-anat', name: 'Human Anatomy', teacherId: 't-alex', term: 'Spring 2026', classicQuizzes: 5, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
-  // Maria Gonzalez
-  { id: 'c-span1', name: 'Spanish I', teacherId: 't-maria', term: 'Fall 2026', classicQuizzes: 9, migratedQuizzes: 2, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 1 },
-  { id: 'c-span2', name: 'Spanish II', teacherId: 't-maria', term: 'Spring 2026', classicQuizzes: 6, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 1, quizzesWithUnsupportedTypes: 1 },
-  // James Chen — heavy review load
-  { id: 'c-art', name: 'Studio Art', teacherId: 't-james', term: 'Fall 2026', classicQuizzes: 11, migratedQuizzes: 0, quizzesWithSubmissions: 4, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
-  { id: 'c-photo', name: 'Digital Photography', teacherId: 't-james', term: 'Spring 2026', classicQuizzes: 7, migratedQuizzes: 0, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 1 },
-  // Priya Patel — clean
-  { id: 'c-alg', name: 'Algebra II', teacherId: 't-priya', term: 'Fall 2026', classicQuizzes: 6, migratedQuizzes: 8, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-calc', name: 'Pre-Calculus', teacherId: 't-priya', term: 'Spring 2026', classicQuizzes: 4, migratedQuizzes: 5, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  // Tom O'Brien
-  { id: 'c-hist', name: 'World History', teacherId: 't-tom', term: 'Fall 2026', classicQuizzes: 10, migratedQuizzes: 3, quizzesWithSubmissions: 0, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
-  { id: 'c-gov', name: 'US Government', teacherId: 't-tom', term: 'Spring 2026', classicQuizzes: 5, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 1 },
-  // Sarah Johnson
-  { id: 'c-chem', name: 'Chemistry', teacherId: 't-sarah', term: 'Fall 2026', classicQuizzes: 12, migratedQuizzes: 0, quizzesWithSubmissions: 5, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
-  { id: 'c-phys', name: 'Physics', teacherId: 't-sarah', term: 'Spring 2026', classicQuizzes: 8, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
+// Hand-authored "featured" courses used in walkthroughs — they lead each tab.
+const FEATURED: Course[] = [
+  { id: 'c-bp-sci', name: 'Science — Blueprint', teacherId: 't-alex', term: 'District', courseType: 'blueprint', subject: 'science', classicQuizzes: 9, migratedQuizzes: 4, quizzesWithSubmissions: 0, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 1 },
+  { id: 'c-tmpl-hum', name: 'Humanities — Course Template', teacherId: 't-tom', term: 'District', courseType: 'template', subject: 'history', classicQuizzes: 6, migratedQuizzes: 2, quizzesWithSubmissions: 0, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-tmpl-math', name: 'Algebra — Course Template', teacherId: 't-priya', term: 'District', courseType: 'template', subject: 'math', classicQuizzes: 5, migratedQuizzes: 3, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-bio101', name: 'Bio 101: Cellular Structure', teacherId: 't-alex', term: 'Fall 2026', courseType: 'active', subject: 'biology', classicQuizzes: 8, migratedQuizzes: 6, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-bio201', name: 'Biology 201 — Genetics', teacherId: 't-alex', term: 'Fall 2026', courseType: 'active', subject: 'biology', classicQuizzes: 7, migratedQuizzes: 5, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-anat', name: 'Human Anatomy', teacherId: 't-alex', term: 'Spring 2026', courseType: 'active', subject: 'biology', classicQuizzes: 5, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-span1', name: 'Spanish I', teacherId: 't-maria', term: 'Fall 2026', courseType: 'active', subject: 'language', classicQuizzes: 9, migratedQuizzes: 2, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 1 },
+  { id: 'c-span2', name: 'Spanish II', teacherId: 't-maria', term: 'Spring 2026', courseType: 'active', subject: 'language', classicQuizzes: 6, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 1, quizzesWithUnsupportedTypes: 1 },
+  { id: 'c-art', name: 'Studio Art', teacherId: 't-james', term: 'Fall 2026', courseType: 'active', subject: 'art', classicQuizzes: 11, migratedQuizzes: 0, quizzesWithSubmissions: 4, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
+  { id: 'c-alg', name: 'Algebra II', teacherId: 't-priya', term: 'Fall 2026', courseType: 'active', subject: 'math', classicQuizzes: 6, migratedQuizzes: 8, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-hist', name: 'World History', teacherId: 't-tom', term: 'Fall 2026', courseType: 'active', subject: 'history', classicQuizzes: 10, migratedQuizzes: 3, quizzesWithSubmissions: 0, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
+  { id: 'c-chem', name: 'Chemistry', teacherId: 't-sarah', term: 'Fall 2026', courseType: 'active', subject: 'science', classicQuizzes: 12, migratedQuizzes: 0, quizzesWithSubmissions: 5, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
+  { id: 'c-phys', name: 'Physics', teacherId: 't-sarah', term: 'Spring 2026', courseType: 'active', subject: 'science', classicQuizzes: 8, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-photo', name: 'Digital Photography (Sandbox)', teacherId: 't-james', term: 'Spring 2026', courseType: 'other', subject: 'art', classicQuizzes: 7, migratedQuizzes: 0, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 1 },
+  { id: 'c-calc', name: 'Pre-Calculus (2025)', teacherId: 't-priya', term: 'Fall 2025', courseType: 'other', subject: 'math', classicQuizzes: 4, migratedQuizzes: 5, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
+  { id: 'c-gov', name: 'US Government (2025)', teacherId: 't-tom', term: 'Fall 2025', courseType: 'other', subject: 'history', classicQuizzes: 5, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 1 },
 ]
+
+// --- Bulk course generation (deterministic, so each tab has 50+ courses) ------
+
+const SUBJECTS: { key: SubjectKey; label: string }[] = [
+  { key: 'biology', label: 'Biology' },
+  { key: 'language', label: 'Spanish' },
+  { key: 'art', label: 'Art' },
+  { key: 'math', label: 'Algebra' },
+  { key: 'history', label: 'History' },
+  { key: 'science', label: 'Chemistry' },
+]
+const LEVELS = ['101', '102', '110', '201', '210', 'I', 'II', 'III', 'Honors', 'AP', 'Lab', 'Seminar']
+const BP_TOPICS = ['Core', 'Foundations', 'Survey', 'Advanced', 'Standard', 'Applied', 'General', 'Accelerated', 'Honors', 'Regents']
+const OTHER_TAGS = ['Sandbox', 'Archived', '2025', 'Draft', 'Pilot', 'Copy', 'Test', '2024']
+const ACTIVE_TERMS = ['Fall 2026', 'Spring 2026']
+const OTHER_TERMS = ['Fall 2025', 'Spring 2025', 'Summer 2025', 'Fall 2024']
+
+function genCourse(group: 'blueprint' | 'active' | 'other', i: number): Course {
+  const subject = SUBJECTS[i % SUBJECTS.length]
+  const teacher = TEACHERS[(i * 3 + group.length) % TEACHERS.length]
+  const classicQuizzes = 4 + ((i * 3) % 11) // 4–14
+  const migratedQuizzes = (i * 5) % 9 // 0–8
+  // Blueprint/template courses are never published, so they can't have submissions.
+  let sub = group !== 'blueprint' && i % 4 === 0 ? 1 + (i % 3) : 0
+  let bank = i % 3 === 0 ? 1 + (i % 2) : 0
+  let unsup = i % 5 === 0 ? 1 : 0
+  while (sub + bank + unsup > classicQuizzes) {
+    if (unsup) unsup--
+    else if (bank) bank--
+    else sub--
+  }
+
+  let name: string
+  let term: string
+  let courseType: CourseType
+  if (group === 'blueprint') {
+    courseType = i % 2 === 0 ? 'blueprint' : 'template'
+    name = `${subject.label} ${BP_TOPICS[i % BP_TOPICS.length]} — ${courseType === 'blueprint' ? 'Blueprint' : 'Template'}`
+    term = 'District'
+  } else if (group === 'active') {
+    courseType = 'active'
+    name = `${subject.label} ${LEVELS[i % LEVELS.length]} · Sec ${(i % 6) + 1}`
+    term = ACTIVE_TERMS[i % ACTIVE_TERMS.length]
+  } else {
+    courseType = 'other'
+    name = `${subject.label} ${LEVELS[i % LEVELS.length]} (${OTHER_TAGS[i % OTHER_TAGS.length]})`
+    term = OTHER_TERMS[i % OTHER_TERMS.length]
+  }
+
+  return {
+    id: `gen-${group}-${i}`,
+    name,
+    teacherId: teacher.id,
+    term,
+    courseType,
+    subject: subject.key,
+    classicQuizzes,
+    migratedQuizzes,
+    quizzesWithSubmissions: sub,
+    quizzesWithItemBanks: bank,
+    quizzesWithUnsupportedTypes: unsup,
+  }
+}
+
+const generated = (['blueprint', 'active', 'other'] as const).flatMap((group) =>
+  Array.from({ length: 50 }, (_, i) => genCourse(group, i)),
+)
+
+export const COURSES: Course[] = [...FEATURED, ...generated]
 
 export function teacherName(teacherId: string): string {
   return TEACHERS.find((t) => t.id === teacherId)?.name ?? 'Unknown'
@@ -88,13 +169,13 @@ const MATH = ['Linear Equations', 'Quadratics', 'Functions & Graphs', 'Polynomia
 const HISTORY = ['The Age of Empires', 'Fall of Rome', 'The Renaissance Era', 'Revolutions & Reform', 'Medieval Kingdoms', 'World Wars', 'The Cold War', 'Industrial Revolution', 'Ancient Civilizations', 'Modern Movements']
 const SCIENCE = ['Atomic Structure', 'Chemical Bonds', 'Reactions & Equations', 'States of Matter', 'Thermodynamics', 'Periodic Trends', 'Stoichiometry', 'Acids & Bases', 'Kinematics', 'Forces & Motion', 'Energy & Work', 'Waves']
 
-const COURSE_POOLS: Record<string, string[]> = {
-  'c-bio101': BIOLOGY, 'c-bio201': BIOLOGY, 'c-anat': BIOLOGY,
-  'c-span1': LANGUAGE, 'c-span2': LANGUAGE,
-  'c-art': ART, 'c-photo': ART,
-  'c-alg': MATH, 'c-calc': MATH,
-  'c-hist': HISTORY, 'c-gov': HISTORY,
-  'c-chem': SCIENCE, 'c-phys': SCIENCE,
+const SUBJECT_POOLS: Record<SubjectKey, string[]> = {
+  biology: BIOLOGY,
+  language: LANGUAGE,
+  art: ART,
+  math: MATH,
+  history: HISTORY,
+  science: SCIENCE,
 }
 
 export type Quiz = {
@@ -108,7 +189,7 @@ export type Quiz = {
 // Generate the Classic quizzes still to migrate for a course, assigning each at most one
 // issue so the per-issue counts add up exactly. Deterministic — no randomness.
 export function courseQuizzes(c: Course): Quiz[] {
-  const pool = COURSE_POOLS[c.id] ?? BIOLOGY
+  const pool = SUBJECT_POOLS[c.subject]
   const { quizzesWithSubmissions: sub, quizzesWithItemBanks: bank, quizzesWithUnsupportedTypes: unsup } = c
   const out: Quiz[] = []
   for (let i = 0; i < c.classicQuizzes; i++) {
@@ -133,7 +214,7 @@ export function courseQuizzes(c: Course): Quiz[] {
 // pool indices past the still-Classic ones so the names don't collide. No issues — they
 // migrated cleanly.
 export function courseMigratedQuizzes(c: Course): Quiz[] {
-  const pool = COURSE_POOLS[c.id] ?? BIOLOGY
+  const pool = SUBJECT_POOLS[c.subject]
   const out: Quiz[] = []
   for (let j = 0; j < c.migratedQuizzes; j++) {
     const i = c.classicQuizzes + j
@@ -297,3 +378,11 @@ export const QUIZ_SOURCES: QuizSource[] = [
   { key: 'bulkMigration', label: 'Bulk migration', count: 18, color: '#00828E' }, // sea
   { key: 'import', label: 'Other imports', count: 8, color: '#6A7883' }, // grey
 ]
+
+// Creation provenance scaled to the actual quiz population, keeping the proportions above,
+// so the donut total matches the district's real quiz count.
+export function quizSources(courses: Course[] = COURSES): QuizSource[] {
+  const total = courses.reduce((s, c) => s + c.classicQuizzes + c.migratedQuizzes, 0)
+  const base = QUIZ_SOURCES.reduce((s, x) => s + x.count, 0)
+  return QUIZ_SOURCES.map((src) => ({ ...src, count: Math.round((total * src.count) / base) }))
+}

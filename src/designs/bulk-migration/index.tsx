@@ -14,6 +14,7 @@ import { Table } from '@instructure/ui-table/latest'
 import { Checkbox } from '@instructure/ui-checkbox/latest'
 import { TextInput } from '@instructure/ui-text-input/latest'
 import { Tag } from '@instructure/ui-tag/latest'
+import { Tabs } from '@instructure/ui-tabs/latest'
 import { Breadcrumb } from '@instructure/ui-breadcrumb/latest'
 import { SideNavBar } from '@instructure/ui-side-nav-bar/latest'
 import { Spinner } from '@instructure/ui-spinner/latest'
@@ -61,7 +62,7 @@ import {
   safeToMigrateCount,
   teacherName,
   ISSUE_LABELS,
-  QUIZ_SOURCES,
+  quizSources,
 } from './migrationModel'
 import type { Course, IssueKey } from './migrationModel'
 import type { PrototypeProps } from '../../registry'
@@ -83,7 +84,6 @@ const HUB_CARDS: { key: string; title: string; desc: string; icon: ReactNode; ac
   { key: 'migration', title: 'Quiz Migration Progress', desc: 'Track and migrate Classic Quizzes to New Quizzes.', icon: <RocketSolidInstUIIcon />, active: true },
 ]
 
-const SOURCE_TOTAL = QUIZ_SOURCES.reduce((s, x) => s + x.count, 0)
 
 export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps) {
   const { sharedTokens } = useComputedTheme()
@@ -96,13 +96,14 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
   const [sortDir, setSortDir] = useState<SortDir>('descending')
   const [selectedCourses, setSelectedCourses] = useState<string[]>([])
   const [showSelectedOnly, setShowSelectedOnly] = useState(false)
+  const [tabIndex, setTabIndex] = useState(0)
 
   // Search + filters
   const [search, setSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [filterEducators, setFilterEducators] = useState<Set<string>>(new Set())
-  const [filterFlags, setFilterFlags] = useState<Set<IssueKey>>(new Set())
-  const [filterTerms, setFilterTerms] = useState<Set<string>>(new Set())
+  const [filterEducator, setFilterEducator] = useState('')
+  const [filterFlag, setFilterFlag] = useState('')
+  const [filterTerm, setFilterTerm] = useState('')
 
   // Migrate flow + modals
   const [migrateScope, setMigrateScope] = useState<Course[]>([])
@@ -122,53 +123,25 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
   }
 
   const stats = bannerStats(courses)
-  const migratable = courses.filter((c) => c.classicQuizzes > 0)
+  const sources = quizSources(courses)
+  const sourceTotal = sources.reduce((s, x) => s + x.count, 0)
   const courseModal = courses.find((c) => c.id === courseModalId) ?? null
 
-  // --- Sorting ---------------------------------------------------------------
-
-  const rows = courses.map((c) => ({
-    course: c,
-    status: migrationStatus(c),
-    educator: teacherName(c.teacherId),
-  }))
-
-  const sortedRows = [...rows].sort((a, b) => {
-    let cmp = 0
-    if (sortKey === 'course') cmp = a.course.name.localeCompare(b.course.name)
-    else if (sortKey === 'educator') cmp = a.educator.localeCompare(b.educator)
-    else if (sortKey === 'status') cmp = (a.status.kind === 'review' ? 1 : 0) - (b.status.kind === 'review' ? 1 : 0)
-    else if (sortKey === 'classic') cmp = a.course.classicQuizzes - b.course.classicQuizzes
-    else cmp = a.course.migratedQuizzes - b.course.migratedQuizzes
-    return sortDir === 'ascending' ? cmp : -cmp
-  })
+  // Tab subsets
+  const bpCourses = courses.filter((c) => c.courseType === 'blueprint' || c.courseType === 'template')
+  const activeCourses = courses.filter((c) => c.courseType === 'active')
+  const otherCourses = courses.filter((c) => c.courseType === 'other')
 
   // Filter options + active filtering
   const educatorOptions = [...new Set(courses.map((c) => teacherName(c.teacherId)))].sort()
   const termOptions = [...new Set(courses.map((c) => c.term))].sort()
-  const activeFilterCount = filterEducators.size + filterFlags.size + filterTerms.size
-
+  const activeFilterCount = [filterTerm, filterEducator, filterFlag].filter(Boolean).length
   const q = search.trim().toLowerCase()
-  const filteredRows = sortedRows.filter((r) => {
-    const matchesSearch = !q || r.course.name.toLowerCase().includes(q) || r.educator.toLowerCase().includes(q)
-    const matchesEducator = filterEducators.size === 0 || filterEducators.has(r.educator)
-    const matchesTerm = filterTerms.size === 0 || filterTerms.has(r.course.term)
-    const matchesFlags = filterFlags.size === 0 || r.status.issues.some((k) => filterFlags.has(k))
-    return matchesSearch && matchesEducator && matchesTerm && matchesFlags
-  })
-  const visibleRows = showSelectedOnly ? filteredRows.filter((r) => selectedCourses.includes(r.course.id)) : filteredRows
 
-  const toggleInSet = <T,>(setter: React.Dispatch<React.SetStateAction<Set<T>>>) => (value: T) =>
-    setter((prev) => {
-      const next = new Set(prev)
-      if (next.has(value)) next.delete(value)
-      else next.add(value)
-      return next
-    })
   const clearFilters = () => {
-    setFilterEducators(new Set())
-    setFilterFlags(new Set())
-    setFilterTerms(new Set())
+    setFilterTerm('')
+    setFilterEducator('')
+    setFilterFlag('')
   }
 
   const onSort = (key: SortKey) => {
@@ -184,8 +157,6 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
 
   const toggleCourse = (id: string) =>
     setSelectedCourses((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
-  const allMigratableSelected = migratable.length > 0 && migratable.every((c) => selectedCourses.includes(c.id))
-  const toggleAll = () => setSelectedCourses(allMigratableSelected ? [] : migratable.map((c) => c.id))
 
   // --- Migrate flow ----------------------------------------------------------
 
@@ -225,6 +196,100 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
       setSelectedCourses([])
       setView('complete')
     }, 1900)
+  }
+
+  // The courses table for one tab's subset — applies the shared sort/search/filters and a
+  // per-tab select-all.
+  const coursesTable = (subset: Course[]) => {
+    const rows = subset.map((c) => ({ course: c, status: migrationStatus(c), educator: teacherName(c.teacherId) }))
+    const sorted = [...rows].sort((a, b) => {
+      let cmp = 0
+      if (sortKey === 'course') cmp = a.course.name.localeCompare(b.course.name)
+      else if (sortKey === 'educator') cmp = a.educator.localeCompare(b.educator)
+      else if (sortKey === 'status') cmp = (a.status.kind === 'review' ? 1 : 0) - (b.status.kind === 'review' ? 1 : 0)
+      else if (sortKey === 'classic') cmp = a.course.classicQuizzes - b.course.classicQuizzes
+      else cmp = a.course.migratedQuizzes - b.course.migratedQuizzes
+      return sortDir === 'ascending' ? cmp : -cmp
+    })
+    const filtered = sorted.filter((r) => {
+      const matchesSearch = !q || r.course.name.toLowerCase().includes(q) || r.educator.toLowerCase().includes(q)
+      const matchesEducator = !filterEducator || r.educator === filterEducator
+      const matchesTerm = !filterTerm || r.course.term === filterTerm
+      const matchesFlag = !filterFlag || r.status.issues.includes(filterFlag as IssueKey)
+      return matchesSearch && matchesEducator && matchesTerm && matchesFlag
+    })
+    const visible = showSelectedOnly ? filtered.filter((r) => selectedCourses.includes(r.course.id)) : filtered
+
+    const migratable = subset.filter((c) => c.classicQuizzes > 0)
+    const allSelected = migratable.length > 0 && migratable.every((c) => selectedCourses.includes(c.id))
+    const someSelected = migratable.some((c) => selectedCourses.includes(c.id))
+    const toggleAll = () => {
+      const ids = migratable.map((c) => c.id)
+      setSelectedCourses((prev) => (allSelected ? prev.filter((id) => !ids.includes(id)) : [...new Set([...prev, ...ids])]))
+    }
+
+    return (
+      <>
+        <Table caption="Courses and migration status" layout="auto">
+          <Table.Head renderSortLabel="Sort by">
+            <Table.Row>
+              <Table.ColHeader id="d-select" width="3rem">
+                <Checkbox
+                  label={<ScreenReaderContent>Select all courses</ScreenReaderContent>}
+                  checked={allSelected}
+                  indeterminate={!allSelected && someSelected}
+                  onChange={toggleAll}
+                />
+              </Table.ColHeader>
+              <Table.ColHeader id="d-course" sortDirection={headerSort('course')} onRequestSort={() => onSort('course')}>Course</Table.ColHeader>
+              <Table.ColHeader id="d-educator" sortDirection={headerSort('educator')} onRequestSort={() => onSort('educator')}>Educator</Table.ColHeader>
+              <Table.ColHeader id="d-status" sortDirection={headerSort('status')} onRequestSort={() => onSort('status')}>Content flags</Table.ColHeader>
+              <Table.ColHeader id="d-classic" sortDirection={headerSort('classic')} onRequestSort={() => onSort('classic')} textAlign="end">Classic Quizzes</Table.ColHeader>
+              <Table.ColHeader id="d-new" sortDirection={headerSort('new')} onRequestSort={() => onSort('new')} textAlign="end">New Quizzes</Table.ColHeader>
+              <Table.ColHeader id="d-action" textAlign="end" width="11rem">Action</Table.ColHeader>
+            </Table.Row>
+          </Table.Head>
+          <Table.Body>
+            {visible.map((r) => (
+              <Table.Row key={r.course.id}>
+                <Table.Cell>
+                  <Checkbox
+                    label={<ScreenReaderContent>Select {r.course.name}</ScreenReaderContent>}
+                    checked={selectedCourses.includes(r.course.id)}
+                    disabled={r.course.classicQuizzes === 0}
+                    onChange={() => toggleCourse(r.course.id)}
+                  />
+                </Table.Cell>
+                <Table.RowHeader>
+                  <Text weight="bold">{r.course.name}</Text>
+                  <Text as="div" size="contentSmall" color="secondary">{r.course.term}</Text>
+                </Table.RowHeader>
+                <Table.Cell>{r.educator}</Table.Cell>
+                <Table.Cell><ContentFlags status={r.status} /></Table.Cell>
+                <Table.Cell textAlign="end">{r.course.classicQuizzes}</Table.Cell>
+                <Table.Cell textAlign="end">{r.course.migratedQuizzes}</Table.Cell>
+                <Table.Cell textAlign="end">
+                  <Button
+                    size="small"
+                    interaction={r.course.classicQuizzes > 0 ? 'enabled' : 'disabled'}
+                    onClick={() => launchMigrate([r.course])}
+                  >
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                      {r.course.classicQuizzes > 0 ? 'Preview migration' : 'Done'}
+                    </span>
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+        {visible.length === 0 ? (
+          <View as="div" display="block" padding="medium" textAlign="center">
+            <Text color="secondary">No courses match your search and filters.</Text>
+          </View>
+        ) : null}
+      </>
+    )
   }
 
   // --- Views -----------------------------------------------------------------
@@ -311,8 +376,8 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
         <Flex.Item size="26rem" shouldGrow shouldShrink>
           {panelCard(
             'How Quizzes were created',
-            `Origin of all ${SOURCE_TOTAL} quizzes across active courses.`,
-            <DonutChart segments={QUIZ_SOURCES} centerLabel={String(SOURCE_TOTAL)} centerSub="quizzes" />,
+            `Origin of all ${sourceTotal} quizzes across active courses.`,
+            <DonutChart segments={sources} centerLabel={String(sourceTotal)} centerSub="quizzes" />,
           )}
         </Flex.Item>
         <Flex.Item size="26rem" shouldGrow shouldShrink>
@@ -362,15 +427,9 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
           {/* Active filter tags */}
           {activeFilterCount > 0 ? (
             <Flex gap="x-small" alignItems="center" wrap="wrap">
-              {[...filterEducators].map((name) => (
-                <Tag key={`ed-${name}`} text={name} dismissible onClick={() => toggleInSet(setFilterEducators)(name)} />
-              ))}
-              {[...filterFlags].map((k) => (
-                <Tag key={`fl-${k}`} text={ISSUE_LABELS[k]} dismissible onClick={() => toggleInSet(setFilterFlags)(k)} />
-              ))}
-              {[...filterTerms].map((t) => (
-                <Tag key={`tm-${t}`} text={t} dismissible onClick={() => toggleInSet(setFilterTerms)(t)} />
-              ))}
+              {filterTerm ? <Tag text={filterTerm} dismissible onClick={() => setFilterTerm('')} /> : null}
+              {filterEducator ? <Tag text={filterEducator} dismissible onClick={() => setFilterEducator('')} /> : null}
+              {filterFlag ? <Tag text={ISSUE_LABELS[filterFlag as IssueKey]} dismissible onClick={() => setFilterFlag('')} /> : null}
               <Link onClick={clearFilters}>Clear all</Link>
             </Flex>
           ) : null}
@@ -395,64 +454,35 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
             </Button>
           </Flex>
 
-          <Table caption="Courses and migration status" layout="auto">
-            <Table.Head renderSortLabel="Sort by">
-              <Table.Row>
-                <Table.ColHeader id="d-select" width="3rem">
-                  <Checkbox
-                    label={<ScreenReaderContent>Select all courses</ScreenReaderContent>}
-                    checked={allMigratableSelected}
-                    indeterminate={!allMigratableSelected && selectedCourses.length > 0}
-                    onChange={toggleAll}
-                  />
-                </Table.ColHeader>
-                <Table.ColHeader id="d-course" sortDirection={headerSort('course')} onRequestSort={() => onSort('course')}>Course</Table.ColHeader>
-                <Table.ColHeader id="d-educator" sortDirection={headerSort('educator')} onRequestSort={() => onSort('educator')}>Educator</Table.ColHeader>
-                <Table.ColHeader id="d-status" sortDirection={headerSort('status')} onRequestSort={() => onSort('status')}>Content flags</Table.ColHeader>
-                <Table.ColHeader id="d-classic" sortDirection={headerSort('classic')} onRequestSort={() => onSort('classic')} textAlign="end">Classic Quizzes</Table.ColHeader>
-                <Table.ColHeader id="d-new" sortDirection={headerSort('new')} onRequestSort={() => onSort('new')} textAlign="end">New Quizzes</Table.ColHeader>
-                <Table.ColHeader id="d-action" textAlign="end" width="11rem">Action</Table.ColHeader>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
-              {visibleRows.map((r) => (
-                <Table.Row key={r.course.id}>
-                  <Table.Cell>
-                    <Checkbox
-                      label={<ScreenReaderContent>Select {r.course.name}</ScreenReaderContent>}
-                      checked={selectedCourses.includes(r.course.id)}
-                      disabled={r.course.classicQuizzes === 0}
-                      onChange={() => toggleCourse(r.course.id)}
-                    />
-                  </Table.Cell>
-                  <Table.RowHeader>
-                    <Text weight="bold">{r.course.name}</Text>
-                    <Text as="div" size="contentSmall" color="secondary">{r.course.term}</Text>
-                  </Table.RowHeader>
-                  <Table.Cell>{r.educator}</Table.Cell>
-                  <Table.Cell><ContentFlags status={r.status} /></Table.Cell>
-                  <Table.Cell textAlign="end">{r.course.classicQuizzes}</Table.Cell>
-                  <Table.Cell textAlign="end">{r.course.migratedQuizzes}</Table.Cell>
-                  <Table.Cell textAlign="end">
-                    <Button
-                      size="small"
-                      interaction={r.course.classicQuizzes > 0 ? 'enabled' : 'disabled'}
-                      onClick={() => launchMigrate([r.course])}
-                    >
-                      <span style={{ whiteSpace: 'nowrap' }}>
-                        {r.course.classicQuizzes > 0 ? 'Preview migration' : 'Done'}
-                      </span>
-                    </Button>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-          {visibleRows.length === 0 ? (
-            <View as="div" display="block" padding="medium" textAlign="center">
-              <Text color="secondary">No courses match your search and filters.</Text>
-            </View>
-          ) : null}
+          <Tabs onRequestTabChange={(_e, { index }) => setTabIndex(index)}>
+            <Tabs.Panel
+              id="tab-blueprint"
+              renderTitle={`Blueprint and Template Courses (${bpCourses.length})`}
+              isSelected={tabIndex === 0}
+              padding="none"
+              themeOverride={{ defaultOverflowY: 'visible' }}
+            >
+              <View as="div" display="block" margin="small 0 0 0">{coursesTable(bpCourses)}</View>
+            </Tabs.Panel>
+            <Tabs.Panel
+              id="tab-active"
+              renderTitle={`Active Courses (${activeCourses.length})`}
+              isSelected={tabIndex === 1}
+              padding="none"
+              themeOverride={{ defaultOverflowY: 'visible' }}
+            >
+              <View as="div" display="block" margin="small 0 0 0">{coursesTable(activeCourses)}</View>
+            </Tabs.Panel>
+            <Tabs.Panel
+              id="tab-other"
+              renderTitle={`All other Courses (${otherCourses.length})`}
+              isSelected={tabIndex === 2}
+              padding="none"
+              themeOverride={{ defaultOverflowY: 'visible' }}
+            >
+              <View as="div" display="block" margin="small 0 0 0">{coursesTable(otherCourses)}</View>
+            </Tabs.Panel>
+          </Tabs>
         </Flex>
       </View>
     </Flex>
@@ -588,12 +618,12 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
         onClose={() => setFilterOpen(false)}
         educators={educatorOptions}
         terms={termOptions}
-        selectedEducators={filterEducators}
-        selectedFlags={filterFlags}
-        selectedTerms={filterTerms}
-        onEducatorsChange={(v) => setFilterEducators(new Set(v))}
-        onFlagsChange={(v) => setFilterFlags(new Set(v))}
-        onTermsChange={(v) => setFilterTerms(new Set(v))}
+        term={filterTerm}
+        educator={filterEducator}
+        flag={filterFlag}
+        onTermChange={setFilterTerm}
+        onEducatorChange={setFilterEducator}
+        onFlagChange={setFilterFlag}
       />
     </View>
   )
