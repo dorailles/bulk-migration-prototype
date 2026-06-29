@@ -52,7 +52,6 @@ export function MigrateModal({
 }) {
   const { sharedTokens } = useComputedTheme()
   const [keepOriginal, setKeepOriginal] = useState(false)
-  const [publishClean, setPublishClean] = useState(false)
   const [unchecked, setUnchecked] = useState<Set<string>>(new Set())
 
   const groups = useMemo(() => {
@@ -91,13 +90,6 @@ export function MigrateModal({
           label="Keep a copy of the original Classic Quiz"
           checked={keepOriginal}
           onChange={(e) => setKeepOriginal(e.target.checked)}
-        />
-        <Checkbox
-          variant="toggle"
-          size="small"
-          label="Publish all Quizzes that don't require a review"
-          checked={publishClean}
-          onChange={(e) => setPublishClean(e.target.checked)}
         />
       </Flex>
     </View>

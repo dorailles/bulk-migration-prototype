@@ -156,6 +156,21 @@ export function teacherName(teacherId: string): string {
   return TEACHERS.find((t) => t.id === teacherId)?.name ?? 'Unknown'
 }
 
+// Canvas sub-accounts — the org units below the district root. Blueprint and template
+// content lives in a district-level sub-account; every other course rolls up to a school.
+// Derived deterministically from the course id so the assignment is stable across renders.
+export const SUBACCOUNTS = ['District Programs', 'Lincoln High School', 'Washington Middle School', 'Roosevelt Elementary'] as const
+export type SubAccount = (typeof SUBACCOUNTS)[number]
+
+const SCHOOL_SUBACCOUNTS: SubAccount[] = ['Lincoln High School', 'Washington Middle School', 'Roosevelt Elementary']
+
+export function courseSubAccount(c: Course): SubAccount {
+  if (c.courseType === 'blueprint' || c.courseType === 'template') return 'District Programs'
+  let h = 0
+  for (let i = 0; i < c.id.length; i++) h = (h * 31 + c.id.charCodeAt(i)) >>> 0
+  return SCHOOL_SUBACCOUNTS[h % SCHOOL_SUBACCOUNTS.length]
+}
+
 export const MIGRATION_DUE_DATE = 'September 1, 2027'
 
 // --- Quiz-level data ---------------------------------------------------------

@@ -61,6 +61,8 @@ import {
   migrationStatus,
   safeToMigrateCount,
   teacherName,
+  courseSubAccount,
+  SUBACCOUNTS,
   ISSUE_LABELS,
   quizSources,
 } from './migrationModel'
@@ -104,6 +106,7 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
   const [filterEducator, setFilterEducator] = useState('')
   const [filterFlag, setFilterFlag] = useState('')
   const [filterTerm, setFilterTerm] = useState('')
+  const [filterSubAccount, setFilterSubAccount] = useState('')
 
   // Migrate flow + modals
   const [migrateScope, setMigrateScope] = useState<Course[]>([])
@@ -135,13 +138,15 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
   // Filter options + active filtering
   const educatorOptions = [...new Set(courses.map((c) => teacherName(c.teacherId)))].sort()
   const termOptions = [...new Set(courses.map((c) => c.term))].sort()
-  const activeFilterCount = [filterTerm, filterEducator, filterFlag].filter(Boolean).length
+  const subAccountOptions = SUBACCOUNTS.filter((s) => courses.some((c) => courseSubAccount(c) === s))
+  const activeFilterCount = [filterTerm, filterEducator, filterFlag, filterSubAccount].filter(Boolean).length
   const q = search.trim().toLowerCase()
 
   const clearFilters = () => {
     setFilterTerm('')
     setFilterEducator('')
     setFilterFlag('')
+    setFilterSubAccount('')
   }
 
   const onSort = (key: SortKey) => {
@@ -216,7 +221,8 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
       const matchesEducator = !filterEducator || r.educator === filterEducator
       const matchesTerm = !filterTerm || r.course.term === filterTerm
       const matchesFlag = !filterFlag || r.status.issues.includes(filterFlag as IssueKey)
-      return matchesSearch && matchesEducator && matchesTerm && matchesFlag
+      const matchesSubAccount = !filterSubAccount || courseSubAccount(r.course) === filterSubAccount
+      return matchesSearch && matchesEducator && matchesTerm && matchesFlag && matchesSubAccount
     })
     const visible = showSelectedOnly ? filtered.filter((r) => selectedCourses.includes(r.course.id)) : filtered
 
@@ -427,6 +433,7 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
           {/* Active filter tags */}
           {activeFilterCount > 0 ? (
             <Flex gap="x-small" alignItems="center" wrap="wrap">
+              {filterSubAccount ? <Tag text={filterSubAccount} dismissible onClick={() => setFilterSubAccount('')} /> : null}
               {filterTerm ? <Tag text={filterTerm} dismissible onClick={() => setFilterTerm('')} /> : null}
               {filterEducator ? <Tag text={filterEducator} dismissible onClick={() => setFilterEducator('')} /> : null}
               {filterFlag ? <Tag text={ISSUE_LABELS[filterFlag as IssueKey]} dismissible onClick={() => setFilterFlag('')} /> : null}
@@ -617,12 +624,15 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
         onClose={() => setFilterOpen(false)}
         educators={educatorOptions}
         terms={termOptions}
+        subAccounts={subAccountOptions}
         term={filterTerm}
         educator={filterEducator}
         flag={filterFlag}
+        subAccount={filterSubAccount}
         onTermChange={setFilterTerm}
         onEducatorChange={setFilterEducator}
         onFlagChange={setFilterFlag}
+        onSubAccountChange={setFilterSubAccount}
       />
     </View>
   )
