@@ -522,7 +522,7 @@ export default function BulkMigration({ isDark, onToggleTheme }: PrototypeProps)
         {lastResult && lastResult.quizzes.length > 0 ? (
           <View as="div" padding="medium" display="block" {...card}>
             <Flex direction="column" gap="small">
-              <Heading level="h3" variant="titleCardRegular" margin="0">Compare and confirm</Heading>
+              <Heading level="h3" variant="titleCardRegular" margin="0">Migration log</Heading>
               <Text color="secondary">
                 You can use this list to compare the newly created quizzes to their Classic version.
               </Text>

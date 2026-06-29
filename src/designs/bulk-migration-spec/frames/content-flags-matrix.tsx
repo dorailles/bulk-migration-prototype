@@ -24,9 +24,7 @@ const ROWS: { status: MigrationStatus; rule: string }[] = [
   { status: mk([]), rule: 'No flags — every quiz converts cleanly. Shown as a muted em dash.' },
   { status: mk(['submissions']), rule: 'A quiz already has student submissions. Migrating would put graded data at risk, so the original is kept.' },
   { status: mk(['itemBanks']), rule: 'A quiz pulls from an item bank. The link does not carry over automatically.' },
-  { status: mk(['unsupportedTypes']), rule: 'A quiz uses a question type New Quizzes does not support yet (e.g. Formula, Hot Spot).' },
-  { status: mk(['submissions', 'itemBanks']), rule: 'More than one flag present — all are listed, comma-separated.' },
-  { status: mk(['submissions', 'itemBanks', 'unsupportedTypes']), rule: 'All three flag types present on one course.' },
+  { status: mk(['submissions', 'itemBanks']), rule: 'Both flags present — all are listed, comma-separated.' },
 ]
 
 export function contentFlagsMatrix({ sharedTokens }: FrameCtx): React.ReactNode {

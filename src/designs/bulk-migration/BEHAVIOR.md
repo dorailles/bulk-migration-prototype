@@ -34,10 +34,9 @@ The model is the source of truth. Everything on screen derives from it, so the b
 
 This is the shared status system, used by every table. Flags are **informational, not a to-do** — they name what won't migrate cleanly so an admin can decide. There's no status word and no icon.
 
-1. There are three flag types:
+1. There are two flag types:
    - **Submissions** — a quiz already has student submissions. Migrating would put graded data at risk, so the original is kept.
    - **Item banks** — a quiz pulls questions from an item bank. The link doesn't carry over automatically.
-   - **Unsupported question types** — a quiz uses a type New Quizzes doesn't support yet (for example, Formula or Hot Spot).
 2. A course with no flags renders a muted em dash, never a "Safe" word. A course with one or more flags lists them, comma-separated.
 3. Flags are a yes/no heads-up, **not a score**. Don't reintroduce a readiness score, a percentage, or a ranking.
 4. **Blueprint and template courses never carry the Submissions flag.** They aren't published, so they can't have student submissions. The course generator enforces this; keep it enforced anywhere flags are assigned.
@@ -106,19 +105,19 @@ Choosing "Preview migration" (single-course or bulk) runs a three-step flow: sca
 ## Migration complete.
 
 1. A success alert summarizes the run ("Migrated N quizzes across M courses").
-2. Below it, a **comparison table** lists each migrated quiz as its Classic and New Quizzes versions side by side, so the admin can confirm each conversion.
+2. Below it, a **comparison table — the migration log** — lists each migrated quiz as its Classic and New Quizzes versions side by side, so the admin can confirm each conversion.
 3. The Classic and New titles each open the respective builder in a new tab (a labelled placeholder in this prototype).
-4. Rows are selectable for a **single or bulk "Replace original."** Replacing swaps the original Classic quiz for its New Quizzes version.
-5. **Replacing is irreversible, so it's always confirmed.** The confirmation restates the count and warns it can't be undone. Both the per-row and bulk paths route through the same confirmation.
-6. **A row with no Classic original can't be selected or replaced.** Its checkbox is disabled — there's no original left to swap.
-7. The toolbar also offers **Report migration issue** (a dialog where the admin describes what looked wrong; the report goes to the migration team) and **Export** (a print-ready page the admin saves as a PDF).
+4. Rows are selectable for a **single or bulk "Delete Classic Quiz."** Deleting permanently removes the Classic original; the New Quizzes version stays in place.
+5. **Deleting is irreversible, so it's always confirmed.** The confirmation restates the count and warns it can't be undone. Both the per-row and bulk paths route through the same confirmation.
+6. **A row with no Classic original can't be selected or deleted.** Its checkbox is disabled — there's no original left to remove.
+7. The toolbar also offers **Report migration issue** (a dialog where the admin describes what looked wrong; the report goes to the migration team) and **Export log** (a print-ready page the admin saves as a PDF).
 
 ---
 
 ## Migrated archive.
 
 1. The "Quizzes migrated" banner stat opens a fullscreen archive of every quiz already on New Quizzes across the district.
-2. It reuses the comparison table, plus a **Migrated date column unique to this view**, so admins can revisit and replace originals at any time — not only right after a run.
+2. It reuses the comparison table, plus a **Migrated date column unique to this view**, so admins can revisit and delete Classic originals at any time — not only right after a run.
 3. Roughly one in four migrated quizzes was migrated without keeping the original. Those rows show "No original" and can't be selected, matching the rule above.
 
 ---

@@ -7,10 +7,10 @@ import { Button } from '@instructure/ui-buttons/latest'
 import { TextArea } from '@instructure/ui-text-area/latest'
 import type { FrameCtx } from '../../../components/SpecSheet'
 
-// Two confirmations from the comparison table, shown stacked. Top: replacing an original
-// Classic quiz with its New Quizzes version is irreversible, so it's always confirmed
-// (single or bulk). Bottom: "Report migration issue" lets an admin describe what looked
-// wrong after migrating; the report goes to the migration team.
+// Two confirmations from the comparison table, shown stacked. Top: deleting a Classic quiz
+// after migrating is irreversible, so it's always confirmed (single or bulk). Bottom:
+// "Report migration issue" lets an admin describe what looked wrong after migrating; the
+// report goes to the migration team.
 export function postMigrationModals({ sharedTokens }: FrameCtx): React.ReactNode {
   const cardProps = {
     as: 'div' as const,
@@ -31,14 +31,14 @@ export function postMigrationModals({ sharedTokens }: FrameCtx): React.ReactNode
       padding="large"
     >
       <Flex direction="column" gap="large" alignItems="stretch">
-        {/* Replace original confirm */}
+        {/* Delete Classic Quiz confirm */}
         <View {...cardProps}>
           <Flex direction="column" gap="small">
-            <Heading level="h2" variant="titleCardLarge" margin="0">Replace 3 original quizzes?</Heading>
-            <Text>These 3 Classic quizzes will be replaced by the New Quizzes versions. This can't be undone.</Text>
+            <Heading level="h2" variant="titleCardLarge" margin="0">Delete 3 Classic Quizzes?</Heading>
+            <Text>These 3 Classic quizzes will be permanently deleted. The New Quizzes versions stay in place. This can't be undone.</Text>
             <Flex gap="small" justifyItems="end">
               <Button>Cancel</Button>
-              <Button color="danger">Replace</Button>
+              <Button color="danger">Delete</Button>
             </Flex>
           </Flex>
         </View>

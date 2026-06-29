@@ -181,7 +181,6 @@ export default function BulkMigrationSpec(_: PrototypeProps) {
                 [
                   'Submissions — a quiz already has student submissions, so migrating would risk graded data; the original is kept.',
                   "Item banks — a quiz pulls from an item bank; the link doesn't carry over automatically.",
-                  "Unsupported question types — a type New Quizzes doesn't support yet (e.g. Formula, Hot Spot).",
                   'A course with no flags shows a muted em dash; multiple flags list comma-separated. It\'s a yes/no heads-up, not a score — no percentage or ranking.',
                   "Blueprint and template courses never carry the Submissions flag — they aren't published, so they can't have submissions.",
                   'The same ContentFlags component renders in every table, so all surfaces read identically. Change it in one place.',
@@ -250,13 +249,13 @@ export default function BulkMigrationSpec(_: PrototypeProps) {
               content: complete(ctx),
               frame: 'complete',
               notes: behavior(
-                'A success summary plus the before/after comparison table for confirming each conversion.',
+                'A success summary plus the before/after comparison table (the migration log) for confirming each conversion.',
                 [
                   'Each migrated quiz is shown as its Classic and New Quizzes versions side by side; the titles open the respective builders in a new tab.',
-                  'Rows are selectable for a single or bulk "Replace original," which swaps the Classic quiz for its New Quizzes version.',
-                  "Replacing is irreversible, so it's always confirmed — both the per-row and bulk paths route through the same confirmation.",
-                  "A row with no Classic original can't be selected or replaced — there's nothing left to swap.",
-                  'The toolbar also offers "Report migration issue" and Export to a print-ready PDF.',
+                  'Rows are selectable for a single or bulk "Delete Classic Quiz," which permanently removes the Classic original; the New Quizzes version stays in place.',
+                  "Deleting is irreversible, so it's always confirmed — both the per-row and bulk paths route through the same confirmation.",
+                  "A row with no Classic original can't be selected or deleted — there's nothing left to remove.",
+                  'The toolbar also offers "Report migration issue" and an Export log to a print-ready PDF.',
                 ],
               ),
             },
@@ -268,22 +267,22 @@ export default function BulkMigrationSpec(_: PrototypeProps) {
               notes: behavior(
                 'The same comparison table opened from the "Quizzes migrated" stat, plus a Migrated date column unique to this view.',
                 [
-                  'Lets admins revisit and replace originals at any time, not only right after a run.',
+                  'Lets admins revisit and delete Classic originals at any time, not only right after a run.',
                   'Roughly one in four migrated quizzes was migrated without keeping the original; those rows show "No original" and can\'t be selected.',
                 ],
               ),
             },
             {
               width: 620,
-              caption: 'Replace and report confirmations',
+              caption: 'Delete and report confirmations',
               content: postMigrationModals(ctx),
               frame: 'post-migration-modals',
               notes: behavior(
                 'The two confirmations from the comparison table, shown stacked.',
                 [
-                  'Replacing an original is irreversible, so the dialog restates the count and warns it can\'t be undone.',
+                  'Deleting a Classic quiz is irreversible, so the dialog restates the count and warns it can\'t be undone.',
                   'The report dialog sends a written issue description to the migration team.',
-                  "Rows with no Classic original can't be selected for replacement.",
+                  "Rows with no Classic original can't be selected for deletion.",
                 ],
               ),
             },

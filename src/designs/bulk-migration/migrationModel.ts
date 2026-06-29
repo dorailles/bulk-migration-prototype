@@ -1,24 +1,19 @@
 // Data model for the admin bulk-migration tool (Classic Quizzes → New Quizzes).
 //
 // A course is safe to migrate when none of its Classic quizzes carry content that needs a
-// closer look first. Three conditions hold a quiz back for review:
-//   - it already has student submissions (migrating would put graded data at risk),
-//   - it pulls questions from an item bank (the link doesn't carry over automatically), or
-//   - it uses a question type New Quizzes doesn't support yet (e.g. Formula, Hot Spot).
+// closer look first. Two conditions hold a quiz back for review:
+//   - it already has student submissions (migrating would put graded data at risk), or
+//   - it pulls questions from an item bank (the link doesn't carry over automatically).
 // A course with any flagged quizzes shows "Review needed" instead of "Safe to migrate".
 // This is a yes/no status, not a score.
 
-export type IssueKey = 'submissions' | 'itemBanks' | 'unsupportedTypes'
+export type IssueKey = 'submissions' | 'itemBanks'
 
 // Short labels used in status tags, the issue column, and quiz groups.
 export const ISSUE_LABELS: Record<IssueKey, string> = {
   submissions: 'Submissions',
   itemBanks: 'Item banks',
-  unsupportedTypes: 'Unsupported question types',
 }
-
-// Question types New Quizzes doesn't support yet — surfaced in the "Review needed" group.
-export const UNSUPPORTED_TYPES = ['Formula', 'Hot Spot'] as const
 
 export type CourseType = 'blueprint' | 'template' | 'active' | 'other'
 export type SubjectKey = 'biology' | 'language' | 'art' | 'math' | 'history' | 'science'
@@ -37,7 +32,6 @@ export type Course = {
   // so their sum is the course's review count and stays <= classicQuizzes.
   quizzesWithSubmissions: number
   quizzesWithItemBanks: number
-  quizzesWithUnsupportedTypes: number
 }
 
 export type Teacher = {
@@ -65,22 +59,22 @@ export const TEACHERS: Teacher[] = [
 
 // Hand-authored "featured" courses used in walkthroughs — they lead each tab.
 const FEATURED: Course[] = [
-  { id: 'c-bp-sci', name: 'Science — Blueprint', teacherId: 't-alex', term: 'District', courseType: 'blueprint', subject: 'science', classicQuizzes: 9, migratedQuizzes: 4, quizzesWithSubmissions: 0, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 1 },
-  { id: 'c-tmpl-hum', name: 'Humanities — Course Template', teacherId: 't-tom', term: 'District', courseType: 'template', subject: 'history', classicQuizzes: 6, migratedQuizzes: 2, quizzesWithSubmissions: 0, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-tmpl-math', name: 'Algebra — Course Template', teacherId: 't-priya', term: 'District', courseType: 'template', subject: 'math', classicQuizzes: 5, migratedQuizzes: 3, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-bio101', name: 'Bio 101: Cellular Structure', teacherId: 't-alex', term: 'Fall 2026', courseType: 'active', subject: 'biology', classicQuizzes: 8, migratedQuizzes: 6, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-bio201', name: 'Biology 201 — Genetics', teacherId: 't-alex', term: 'Fall 2026', courseType: 'active', subject: 'biology', classicQuizzes: 7, migratedQuizzes: 5, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-anat', name: 'Human Anatomy', teacherId: 't-alex', term: 'Spring 2026', courseType: 'active', subject: 'biology', classicQuizzes: 5, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-span1', name: 'Spanish I', teacherId: 't-maria', term: 'Fall 2026', courseType: 'active', subject: 'language', classicQuizzes: 9, migratedQuizzes: 2, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 1 },
-  { id: 'c-span2', name: 'Spanish II', teacherId: 't-maria', term: 'Spring 2026', courseType: 'active', subject: 'language', classicQuizzes: 6, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 1, quizzesWithUnsupportedTypes: 1 },
-  { id: 'c-art', name: 'Studio Art', teacherId: 't-james', term: 'Fall 2026', courseType: 'active', subject: 'art', classicQuizzes: 11, migratedQuizzes: 0, quizzesWithSubmissions: 4, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
-  { id: 'c-alg', name: 'Algebra II', teacherId: 't-priya', term: 'Fall 2026', courseType: 'active', subject: 'math', classicQuizzes: 6, migratedQuizzes: 8, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-hist', name: 'World History', teacherId: 't-tom', term: 'Fall 2026', courseType: 'active', subject: 'history', classicQuizzes: 10, migratedQuizzes: 3, quizzesWithSubmissions: 0, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
-  { id: 'c-chem', name: 'Chemistry', teacherId: 't-sarah', term: 'Fall 2026', courseType: 'active', subject: 'science', classicQuizzes: 12, migratedQuizzes: 0, quizzesWithSubmissions: 5, quizzesWithItemBanks: 3, quizzesWithUnsupportedTypes: 2 },
-  { id: 'c-phys', name: 'Physics', teacherId: 't-sarah', term: 'Spring 2026', courseType: 'active', subject: 'science', classicQuizzes: 8, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-photo', name: 'Digital Photography (Sandbox)', teacherId: 't-james', term: 'Spring 2026', courseType: 'other', subject: 'art', classicQuizzes: 7, migratedQuizzes: 0, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2, quizzesWithUnsupportedTypes: 1 },
-  { id: 'c-calc', name: 'Pre-Calculus (2025)', teacherId: 't-priya', term: 'Fall 2025', courseType: 'other', subject: 'math', classicQuizzes: 4, migratedQuizzes: 5, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 0 },
-  { id: 'c-gov', name: 'US Government (2025)', teacherId: 't-tom', term: 'Fall 2025', courseType: 'other', subject: 'history', classicQuizzes: 5, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0, quizzesWithUnsupportedTypes: 1 },
+  { id: 'c-bp-sci', name: 'Science — Blueprint', teacherId: 't-alex', term: 'District', courseType: 'blueprint', subject: 'science', classicQuizzes: 9, migratedQuizzes: 4, quizzesWithSubmissions: 0, quizzesWithItemBanks: 3 },
+  { id: 'c-tmpl-hum', name: 'Humanities — Course Template', teacherId: 't-tom', term: 'District', courseType: 'template', subject: 'history', classicQuizzes: 6, migratedQuizzes: 2, quizzesWithSubmissions: 0, quizzesWithItemBanks: 2 },
+  { id: 'c-tmpl-math', name: 'Algebra — Course Template', teacherId: 't-priya', term: 'District', courseType: 'template', subject: 'math', classicQuizzes: 5, migratedQuizzes: 3, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0 },
+  { id: 'c-bio101', name: 'Bio 101: Cellular Structure', teacherId: 't-alex', term: 'Fall 2026', courseType: 'active', subject: 'biology', classicQuizzes: 8, migratedQuizzes: 6, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2 },
+  { id: 'c-bio201', name: 'Biology 201 — Genetics', teacherId: 't-alex', term: 'Fall 2026', courseType: 'active', subject: 'biology', classicQuizzes: 7, migratedQuizzes: 5, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0 },
+  { id: 'c-anat', name: 'Human Anatomy', teacherId: 't-alex', term: 'Spring 2026', courseType: 'active', subject: 'biology', classicQuizzes: 5, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 2 },
+  { id: 'c-span1', name: 'Spanish I', teacherId: 't-maria', term: 'Fall 2026', courseType: 'active', subject: 'language', classicQuizzes: 9, migratedQuizzes: 2, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2 },
+  { id: 'c-span2', name: 'Spanish II', teacherId: 't-maria', term: 'Spring 2026', courseType: 'active', subject: 'language', classicQuizzes: 6, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 1 },
+  { id: 'c-art', name: 'Studio Art', teacherId: 't-james', term: 'Fall 2026', courseType: 'active', subject: 'art', classicQuizzes: 11, migratedQuizzes: 0, quizzesWithSubmissions: 4, quizzesWithItemBanks: 3 },
+  { id: 'c-alg', name: 'Algebra II', teacherId: 't-priya', term: 'Fall 2026', courseType: 'active', subject: 'math', classicQuizzes: 6, migratedQuizzes: 8, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0 },
+  { id: 'c-hist', name: 'World History', teacherId: 't-tom', term: 'Fall 2026', courseType: 'active', subject: 'history', classicQuizzes: 10, migratedQuizzes: 3, quizzesWithSubmissions: 0, quizzesWithItemBanks: 3 },
+  { id: 'c-chem', name: 'Chemistry', teacherId: 't-sarah', term: 'Fall 2026', courseType: 'active', subject: 'science', classicQuizzes: 12, migratedQuizzes: 0, quizzesWithSubmissions: 5, quizzesWithItemBanks: 3 },
+  { id: 'c-phys', name: 'Physics', teacherId: 't-sarah', term: 'Spring 2026', courseType: 'active', subject: 'science', classicQuizzes: 8, migratedQuizzes: 0, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0 },
+  { id: 'c-photo', name: 'Digital Photography (Sandbox)', teacherId: 't-james', term: 'Spring 2026', courseType: 'other', subject: 'art', classicQuizzes: 7, migratedQuizzes: 0, quizzesWithSubmissions: 3, quizzesWithItemBanks: 2 },
+  { id: 'c-calc', name: 'Pre-Calculus (2025)', teacherId: 't-priya', term: 'Fall 2025', courseType: 'other', subject: 'math', classicQuizzes: 4, migratedQuizzes: 5, quizzesWithSubmissions: 0, quizzesWithItemBanks: 0 },
+  { id: 'c-gov', name: 'US Government (2025)', teacherId: 't-tom', term: 'Fall 2025', courseType: 'other', subject: 'history', classicQuizzes: 5, migratedQuizzes: 1, quizzesWithSubmissions: 2, quizzesWithItemBanks: 0 },
 ]
 
 // --- Bulk course generation (deterministic, so each tab has 50+ courses) ------
@@ -107,10 +101,8 @@ function genCourse(group: 'blueprint' | 'active' | 'other', i: number): Course {
   // Blueprint/template courses are never published, so they can't have submissions.
   let sub = group !== 'blueprint' && i % 4 === 0 ? 1 + (i % 3) : 0
   let bank = i % 3 === 0 ? 1 + (i % 2) : 0
-  let unsup = i % 5 === 0 ? 1 : 0
-  while (sub + bank + unsup > classicQuizzes) {
-    if (unsup) unsup--
-    else if (bank) bank--
+  while (sub + bank > classicQuizzes) {
+    if (bank) bank--
     else sub--
   }
 
@@ -142,7 +134,6 @@ function genCourse(group: 'blueprint' | 'active' | 'other', i: number): Course {
     migratedQuizzes,
     quizzesWithSubmissions: sub,
     quizzesWithItemBanks: bank,
-    quizzesWithUnsupportedTypes: unsup,
   }
 }
 
@@ -205,13 +196,12 @@ export type Quiz = {
 // issue so the per-issue counts add up exactly. Deterministic — no randomness.
 export function courseQuizzes(c: Course): Quiz[] {
   const pool = SUBJECT_POOLS[c.subject]
-  const { quizzesWithSubmissions: sub, quizzesWithItemBanks: bank, quizzesWithUnsupportedTypes: unsup } = c
+  const { quizzesWithSubmissions: sub, quizzesWithItemBanks: bank } = c
   const out: Quiz[] = []
   for (let i = 0; i < c.classicQuizzes; i++) {
     let issues: IssueKey[] = []
     if (i < sub) issues = ['submissions']
     else if (i < sub + bank) issues = ['itemBanks']
-    else if (i < sub + bank + unsup) issues = ['unsupportedTypes']
     const round = Math.floor(i / pool.length)
     const name = pool[i % pool.length] + (round > 0 ? ` ${round + 1}` : '')
     out.push({
@@ -277,11 +267,10 @@ export function migrationStatus(c: Course): MigrationStatus {
   const issues: IssueKey[] = []
   if (c.quizzesWithSubmissions > 0) issues.push('submissions')
   if (c.quizzesWithItemBanks > 0) issues.push('itemBanks')
-  if (c.quizzesWithUnsupportedTypes > 0) issues.push('unsupportedTypes')
 
   const reviewQuizzes = Math.min(
     c.classicQuizzes,
-    c.quizzesWithSubmissions + c.quizzesWithItemBanks + c.quizzesWithUnsupportedTypes,
+    c.quizzesWithSubmissions + c.quizzesWithItemBanks,
   )
   const kind: MigrationStatusKind = issues.length > 0 ? 'review' : 'safe'
 

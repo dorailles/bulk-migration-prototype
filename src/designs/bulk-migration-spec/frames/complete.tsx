@@ -8,11 +8,11 @@ import { ComparisonTable } from '../../bulk-migration/ComparisonTable'
 import { allMigratedQuizzes, COURSES } from '../../bulk-migration/migrationModel'
 import type { FrameCtx } from '../../../components/SpecSheet'
 
-// Migration complete. A success summary, then the real before/after comparison table:
-// each migrated quiz as its Classic and New Quizzes versions (titles open the respective
-// builders), selectable rows, and a "Replace original" action — single or bulk, always
-// confirmed. Rows with no Classic original can't be selected. The toolbar also offers
-// "Report migration issue" and an Export to PDF.
+// Migration complete. A success summary, then the real before/after comparison table (the
+// migration log): each migrated quiz as its Classic and New Quizzes versions (titles open
+// the respective builders), selectable rows, and a "Delete Classic Quiz" action — single
+// or bulk, always confirmed. Rows with no Classic original can't be selected. The toolbar
+// also offers "Report migration issue" and an Export log to PDF.
 export function complete({ sharedTokens }: FrameCtx): React.ReactNode {
   const quizzes = allMigratedQuizzes(COURSES).slice(0, 5)
   return (
@@ -38,7 +38,7 @@ export function complete({ sharedTokens }: FrameCtx): React.ReactNode {
           shadow="resting"
         >
           <Flex direction="column" gap="small">
-            <Heading level="h3" variant="titleCardRegular" margin="0">Compare and confirm</Heading>
+            <Heading level="h3" variant="titleCardRegular" margin="0">Migration log</Heading>
             <Text color="secondary">You can use this list to compare the newly created quizzes to their Classic version.</Text>
             <ComparisonTable quizzes={quizzes} />
           </Flex>

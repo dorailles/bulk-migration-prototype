@@ -122,14 +122,14 @@ export function ComparisonTable({ quizzes, showDate = false }: { quizzes: Compar
       <Flex justifyItems="space-between" alignItems="center" wrap="wrap" gap="small">
         <Flex gap="small" alignItems="center">
           <Button renderIcon={<FlagInstUIIcon />} onClick={() => setReportOpen(true)}>Report migration issue</Button>
-          <Button renderIcon={<DownloadInstUIIcon />} onClick={() => exportPdf(quizzes, deleted, showDate)}>Export</Button>
+          <Button renderIcon={<DownloadInstUIIcon />} onClick={() => exportPdf(quizzes, deleted, showDate)}>Export log</Button>
         </Flex>
         <Button
           color="danger"
           interaction={selected.size > 0 ? 'enabled' : 'disabled'}
           onClick={() => setPending([...selected])}
         >
-          Replace originals
+          Delete Classic Quizzes
         </Button>
       </Flex>
 
@@ -193,7 +193,7 @@ export function ComparisonTable({ quizzes, showDate = false }: { quizzes: Compar
                 <Table.Cell textAlign="end">
                   {canAct ? (
                     <Button size="small" color="danger" onClick={() => setPending([q.id])}>
-                      <span style={{ whiteSpace: 'nowrap' }}>Replace original</span>
+                      <span style={{ whiteSpace: 'nowrap' }}>Delete Classic Quiz</span>
                     </Button>
                   ) : null}
                 </Table.Cell>
@@ -204,24 +204,24 @@ export function ComparisonTable({ quizzes, showDate = false }: { quizzes: Compar
       </Table>
 
       {/* Delete confirmation */}
-      <Modal open={pending !== null} onDismiss={() => setPending(null)} size="small" label="Delete original Classic quizzes">
+      <Modal open={pending !== null} onDismiss={() => setPending(null)} size="small" label="Delete Classic Quizzes">
         <Modal.Header>
           <Flex justifyItems="space-between" alignItems="center">
             <Heading level="h2" variant="titleCardLarge" margin="0">
-              Replace {pendingCount === 1 ? 'original quiz' : `${pendingCount} original quizzes`}?
+              Delete {pendingCount === 1 ? 'Classic Quiz' : `${pendingCount} Classic Quizzes`}?
             </Heading>
             <CloseButton onClick={() => setPending(null)} screenReaderLabel="Close" />
           </Flex>
         </Modal.Header>
         <Modal.Body>
           <Text>
-            {pendingCount === 1 ? 'This Classic quiz' : `These ${pendingCount} Classic quizzes`} will be replaced by
-            the New Quizzes {pendingCount === 1 ? 'version' : 'versions'}. This can't be undone.
+            {pendingCount === 1 ? 'This Classic quiz' : `These ${pendingCount} Classic quizzes`} will be permanently
+            deleted. The New Quizzes {pendingCount === 1 ? 'version stays' : 'versions stay'} in place. This can't be undone.
           </Text>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={() => setPending(null)} margin="0 x-small 0 0">Cancel</Button>
-          <Button color="danger" onClick={confirmDelete}>Replace</Button>
+          <Button color="danger" onClick={confirmDelete}>Delete</Button>
         </Modal.Footer>
       </Modal>
 
